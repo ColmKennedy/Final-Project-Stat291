@@ -1,0 +1,7 @@
+"0","library(ggplot2)"
+"0","library(moderndive)"
+"0","library(dplyr)"
+"0",""
+"0","all <- read.csv('data/all.csv')"
+"0",""
+"0","head(all)"
