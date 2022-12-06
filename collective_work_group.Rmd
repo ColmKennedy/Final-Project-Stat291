@@ -270,3 +270,47 @@ get_correlation(all, formula = chdperwoman~population)
 ```
 # there is an understandably high correlation between children per woman and child mortality. I did find it interesting there isn't really a correlation between children per woman and population but I do not think it will be of too much use in life expectancy.  
 
+
+#Transformations of variables that directly influence lifeexp
+```{r}
+ggplot(data=all, aes(x=lifeexp))+geom_histogram(color="white")
+
+
+all %>% 
+  select(co2, chdperwoman, childmort, income, gdpcapita, healthspend, water) %>% 
+  skim()
+
+
+ggplot(data=all, aes(x=co2))+geom_histogram(color="white")
+#co2 not skewed that much so no need for transformation
+
+
+
+ggplot(data=all, aes(x=chdperwoman))+geom_histogram(color="white")
+#chdperwoman not skewed that much so no need for transformation
+
+
+
+ggplot(data=all, aes(x=childmort))+geom_histogram(color="white")
+#childmort skewed just enough that a log transformation may yield more useful results
+
+
+ggplot(data=all, aes(x=income))+geom_histogram(color="white")
+#definitely can use log transformation
+
+
+ggplot(data=all, aes(x=gdpcapita))+geom_histogram(color="white")
+#definitely can use log transformation
+
+
+ggplot(data=all, aes(x=healthspend))+geom_histogram(color="white")
+#definitely can use log transformation
+
+
+ggplot(data=all, aes(x=water))+geom_histogram(color="white")
+#difference between min and max is not too big
+
+
+logVars <- all %>% mutate(chdperwoman=log(chdperwoman), healthspend=log(healthspend), childmort = log(childmort), income=log(income), gdpcapita=log(gdpcapita), healthspend=log(healthspend))
+```
+
