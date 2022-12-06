@@ -1,0 +1,272 @@
+---
+title: "Final Project - EDA"
+author: "Colm Kennedy, Shril Patel, Michael Jucan, Ethan Matta"
+date: "2022-11-03"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Libraries
+
+```{r}
+library(ggplot2)
+library(moderndive)
+library(dplyr)
+all <- read.csv('data/all.csv')
+head(all)
+```
+
+# Exploratory Data Analysis
+
+### Population
+
+The populations are skewed right, meaning there are fewer high populations. Most populations lie between 4.6 million and 32 million. Population does not seem correlated with life expectancy, r = 0.05.
+
+```{r}
+summary(all$population)
+ggplot(data = all, mapping = aes(x = population)) +
+  geom_histogram(color = 'white') +
+  scale_x_continuous(labels = scales::comma)
+ggplot(data = all, mapping = aes(x = population, y = lifeexp)) + 
+  geom_point()+
+  geom_smooth(method = 'lm', se = FALSE)
+# Correlation
+get_correlation(all, formula = lifeexp ~ population)
+# very low corr life exp and pop
+```
+
+
+### Child Mortality ***
+
+Child mortality and life expectancy have an extremely high negative correlation, r = -0.91. The plot illustrates a strong linear relationship. This is a very good indicator of life expectancy, and a great candidate for our model.
+
+```{r}
+summary(all$childmort)
+ggplot(data = all, mapping = aes(x = childmort, y = lifeexp)) + 
+  geom_point()+
+  geom_smooth(method = 'lm', se = FALSE)
+get_correlation(all, formula = lifeexp ~ childmort)
+# Extremely strong correlation
+```
+
+
+### Income ***
+
+Income and life expectancy are also highly correlated, r = 0.72. The relationship appears logarithmic, applying log to income appears to make the relationship linear. This is another good candidate for our model.
+
+```{r}
+# Income
+summary(all$income)
+ggplot(data = all, mapping = aes(x = income, y = lifeexp)) + 
+  geom_point()+
+  geom_smooth(method = 'lm', se = FALSE)
+ggplot(data = all, mapping = aes(x = log(income), y = lifeexp)) + 
+  geom_point()+
+  geom_smooth(method = 'lm', se = FALSE)
+get_correlation(all, formula = lifeexp ~ income)
+# Strong correlation
+```
+
+### Income and Child Mortality
+
+Income and child mortality appear to have a relationship with each other and may be interacting. They are negatively correlated, r = -0.64. After applying log to income, the relationship appears much more linear. It would be worth trying an interaction model with income and child mortality. 
+
+```{r}
+ggplot(data = all, mapping = aes(x = income, y = childmort)) + 
+  geom_point()+
+  geom_smooth(method = 'lm', se = FALSE)
+ggplot(data = all, mapping = aes(x = log(income), y = childmort)) + 
+  geom_point()+
+  geom_smooth(method = 'lm', se = FALSE)
+get_correlation(all, formula = childmort ~ income)
+```
+
+#Murder
+```{r}
+ggplot(data=all, aes(x=murder)) + geom_histogram(color = "white")
+cor(all$lifeexp, all$murder)
+ggplot(data=all, aes(x=murder, y=lifeexp)) + geom_point() + geom_smooth(method = 'lm', se = FALSE)
+```
+
+#Analysis: After observing the correlation coefficient between lifeexp and murder it was clear that the relationship between the two was very weak. As a result, when plotted on a scatterplot the projected line is almost a horizontal line. Although the murder variable does not have as big an impact on lifeexp, murder may be closely related to another variable to create a influential factor for lifeexp. Further analysis with its colinearity with other variables would be needed.
+
+
+#GDPCapita
+```{r}
+ggplot(data=all, aes(x=gdpcapita)) + geom_histogram(color = "white")
+cor(all$lifeexp, all$gdpcapita)
+ggplot(data=all, aes(x=gdpcapita, y=lifeexp)) + geom_point() + geom_smooth(method = 'lm', se = FALSE)
+model1 <- lm(data=all, lifeexp~gdpcapita)
+get_regression_table(model1)
+get_regression_summaries(model1)
+all2 <- all %>% mutate(lifeexp=log(lifeexp), gdpcapita=log(gdpcapita))
+model2 <- lm(data=all2, lifeexp~gdpcapita)
+get_regression_table(model2)
+get_regression_summaries(model2)
+ggplot(data=all2, aes(x=gdpcapita, y=lifeexp)) + geom_point() + geom_smooth(method = 'lm', se = FALSE) 
+```
+
+#Analysis: After taking a look at the relatively hight correlation coefficient between gdpcapita and lifeexp, I saw that plotting a scatterplot with a regression line of lifeexp on gdpcapita showed that the pattern of points followed a exponential curve rather than a linear line. So after taking a look at the log of lifeexp on log of gdpcapita, the scatterplot shows that the points more closely follow the regression line. The relationship between gdpcapita and lifeexp is a positive one that shows that as gdpcapita increases, so does lifeexp.
+
+
+#HealthSpend
+```{r}
+ggplot(data=all, aes(x=healthspend)) + geom_histogram(color = "white")
+cor(all$lifeexp, all$healthspend)
+ggplot(data=all, aes(x=healthspend, y=lifeexp)) + geom_point() + geom_smooth(method = 'lm', se = FALSE)
+model3 <- lm(data=all, lifeexp~healthspend)
+get_regression_table(model3)
+get_regression_summaries(model3)
+all3 <- all %>% mutate(lifeexp=log(lifeexp), healthspend=log(healthspend))
+model4 <- lm(data=all3, lifeexp~healthspend)
+get_regression_table(model4)
+get_regression_summaries(model4)
+ggplot(data=all3, aes(x=healthspend, y=lifeexp)) + geom_point() + geom_smooth(method = 'lm', se = FALSE) 
+```
+
+#Analysis: The correlation coefficient between lifeexp and healthspend is 0.592, which shows that there is a positive relationship between healthspend and lifeexp. Further examining this relationship, the scatterplot of the relationship shows a exponential curve of the data points. After applying the log() function to lifeexp and healthspend, we can see more clearly how the data points on the plot appear to be closer to the projected positive regression line. 
+
+
+#PopDensity
+```{r}
+ggplot(data=all, aes(x=popdensity)) + geom_histogram(color = "white")
+cor(all$lifeexp, all$popdensity)
+ggplot(data=all, aes(x=popdensity, y=lifeexp)) + geom_point() + geom_smooth(method = 'lm', se = FALSE)
+
+ggplot(data=all, aes(x=popdensity)) + geom_histogram(color = "white") + xlim(0, 650)
+ggplot(data=all, aes(x=popdensity, y=lifeexp)) + geom_point() + geom_smooth(method = 'lm', se = FALSE) + xlim(0, 650)
+
+all4 <- all %>% mutate(popdensity=log(popdensity))
+cor(all4$lifeexp, all4$popdensity)
+ggplot(data=all4, aes(x=popdensity, y=lifeexp)) + geom_point() + geom_smooth(method = 'lm', se = FALSE)
+```
+
+# Analysis: The distribution of population densities of countries is skewed right, with most countries having lower densities and a few having very high densities. The largest outlier, Singapore, is an order of magnitude more dense than the next densest country, and therefore for the second set of plots it is not pictured so that the distribution can be viewed in more detail. The correlation between population density and life expectancy is 0.138, which is positive but weak. Since the distribution of population densities is skewed and approximately follows an exponential distribution, it is worth examining the correlation between the log of population density and life expectancy, which has a still weak but slightly higher correlation of 0.151. This variable alone may not be useful for predicting life expectancy, but it may still be useful depending on its relationship to other variables.
+
+# Water
+```{r}
+ggplot(data=all, aes(x=water)) + geom_histogram(color = "white")
+cor(all$lifeexp, all$water)
+ggplot(data=all, aes(x=water, y=lifeexp)) + geom_point() + geom_smooth(method = 'lm', se = FALSE)
+
+all5 <- all %>% mutate(water=log(101-water))
+cor(all$lifeexp, all5$water)
+ggplot(data=all5, aes(x=water, y=lifeexp)) + geom_point() + geom_smooth(method = 'lm', se = FALSE)
+
+model5 <- lm(data=all5, lifeexp~water)
+get_regression_table(model5)
+get_regression_summaries(model5)
+
+cor(all5$water, all$childmort)
+cor(all5$water, all$gdpcapita)
+cor(all5$water, all$income)
+```
+
+# Analysis: The distribution of water access of countries is skewed left, with a large amount of countries at 100 and the rest spread out below 100. There is a relatively strong and positive correlation between water access and life expectancy, at 0.7619. Since the variable is maximized at 100 and many nations are at this maximum, the relationship may be better expressed as the log of the distance between water access and 100. Modifying the data as such, the new correlation is r = -0.8235, which is negative and quite strong.
+
+# Continent
+```{r}
+ggplot(data=all, aes(x=continent, y=lifeexp, fill=continent)) + geom_boxplot()
+
+ggplot(data=all, aes(x=childmort, y=lifeexp, color=continent)) + geom_point() + geom_smooth(method = "lm", se = FALSE)
+model6_1 <- lm(data = all, lifeexp ~ childmort * continent)
+get_regression_table(model6_1)
+get_regression_summaries(model6_1)
+
+ggplot(data=all5, aes(x=water, y=lifeexp, color=continent)) + geom_point() + geom_smooth(method = "lm", se = FALSE)
+model6_2 <- lm(data = all5, lifeexp ~ water * continent)
+get_regression_table(model6_2)
+get_regression_summaries(model6_2)
+
+ggplot(data=all, aes(x=log(income), y=lifeexp, color=continent)) + geom_point() + geom_smooth(method = "lm", se = FALSE)
+model6_3 <- lm(data = all, lifeexp ~ income * continent)
+get_regression_table(model6_3)
+get_regression_summaries(model6_3)
+
+```
+
+# Analysis: As shown by the boxplot above, each continent has a visibly different distribution of life expectancies in this data set. As such, it is worth exploring how using continent alongside highly correlated variables can potentially improve our predictions. The 3 runs of multiple regression above, where continent was used as an interaction term with the 3 most correlated variables so far, each model is significant for all continents except Oceania. For our final model, it may be worth trying a model using continent as one of the indicators with Oceania grouped with another continent, such as Europe. 
+
+
+# chdperwoman
+```{r}
+summary(all$chdperwoman)
+
+ggplot(data = all, mapping = aes(x = chdperwoman)) +
+  geom_histogram(color = 'white') +
+  scale_x_continuous(labels = scales::comma)
+
+ggplot(data = all, mapping = aes(x = chdperwoman, y = lifeexp)) + 
+  geom_point()+
+  geom_smooth(method = 'lm', se = FALSE)
+
+
+get_correlation(all, formula = lifeexp ~ chdperwoman)
+
+
+ggplot(data = all, mapping = aes(x = chdperwoman, y = lifeexp, color = continent)) + 
+  geom_point()+
+  geom_smooth(method = 'lm', se = FALSE)
+
+ggplot(data = all, mapping = aes(x = chdperwoman, y = lifeexp, color = continent)) + 
+  geom_point()+
+  geom_smooth(method = 'lm', se = FALSE)
+
+```
+
+# interesting relationships between country, life expectancy, and child per woman. The slope for all countries except Europe is generally negative with the most dramatic slope being in the Americas. Asia and Africa have a more steady decline showing that life expectancy generally decreases as children per woman increases. There is also a strong correlation between life expectancy and children per woman
+
+
+# country
+```{r}
+
+ggplot(data = all, mapping = aes(x = chdperwoman, y = lifeexp, color = country)) + 
+  geom_point()+
+  geom_smooth(method = 'lm', se = FALSE)
+
+
+```
+# in general I think the country category is too general and broad to derive any sort of true meaning from. I think we are best to stick with continent as it groups the countries together in a more meaningful way based on location. I think it also important to note Oceania may be a weaker indicator as it is only made up of 2 countries as opposed to the other continents which include more countries. 
+
+
+# co2
+```{r}
+summary(all$co2)
+
+ggplot(data = all, mapping = aes(x = co2)) +
+  geom_histogram(color = 'white') +
+  scale_x_continuous(labels = scales::comma)
+
+ggplot(data = all, mapping = aes(x = co2, y = lifeexp)) + 
+  geom_point()+
+  geom_smooth(method = 'lm', se = FALSE)
+ggplot(data = all, mapping = aes(x = co2, y = chdperwoman)) + 
+  geom_point()+
+  geom_smooth(method = 'lm', se = FALSE)
+
+
+
+get_correlation(all, formula = lifeexp ~ co2)
+get_correlation(all, formula = water ~ co2)
+
+
+```
+
+# experimenting with correlations
+```{r}
+get_correlation(all, formula = co2 ~ chdperwoman)
+get_correlation(all, formula = co2 ~ popdensity)
+get_correlation(all, formula = chdperwoman~healthspend)
+get_correlation(all, formula = chdperwoman~childmort)
+get_correlation(all, formula = chdperwoman~income)
+get_correlation(all, formula = chdperwoman~gdpcapita)
+get_correlation(all, formula = chdperwoman~population)
+
+```
+# there is an understandably high correlation between children per woman and child mortality. I did find it interesting there isn't really a correlation between children per woman and population but I do not think it will be of too much use in life expectancy.  
+
