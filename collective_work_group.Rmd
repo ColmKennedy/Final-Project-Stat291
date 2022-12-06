@@ -314,3 +314,47 @@ ggplot(data=all, aes(x=water))+geom_histogram(color="white")
 logVars <- all %>% mutate(chdperwoman=log(chdperwoman), healthspend=log(healthspend), childmort = log(childmort), income=log(income), gdpcapita=log(gdpcapita), healthspend=log(healthspend))
 ```
 
+
+```{r}
+#Based off of just directly related variables, building and examining some interaction models
+
+#-------Grouping regressions by continents----------
+
+#Interaction Models with Continent
+ggplot(data=logVars, aes(x=income, y=lifeexp, col=continent)) + geom_point(alpha=0.2) + geom_smooth(method="lm", se = FALSE)
+
+ggplot(data=logVars, aes(x=chdperwoman, y=lifeexp, col=continent)) + geom_point(alpha=0.2) + geom_smooth(method="lm", se = FALSE)
+
+ggplot(data=logVars, aes(x=healthspend, y=lifeexp, col=continent)) + geom_point(alpha=0.2) + geom_smooth(method="lm", se = FALSE)
+
+ggplot(data=logVars, aes(x=childmort, y=lifeexp, col=continent)) + geom_point(alpha=0.2) + geom_smooth(method="lm", se = FALSE)
+
+ggplot(data=logVars, aes(x=gdpcapita, y=lifeexp, col=continent)) + geom_point(alpha=0.2) + geom_smooth(method="lm", se = FALSE)
+
+
+#Without Continent Interaction, Parallel Slopes Models
+
+ggplot(data=logVars, aes(x=income, y=lifeexp, col=continent)) + geom_point(alpha=0.2) + geom_parallel_slopes(se = FALSE)
+
+ggplot(data=logVars, aes(x=chdperwoman, y=lifeexp, col=continent)) + geom_point(alpha=0.2) + geom_parallel_slopes(se = FALSE)
+
+ggplot(data=logVars, aes(x=healthspend, y=lifeexp, col=continent)) + geom_point(alpha=0.2) + geom_parallel_slopes(se = FALSE)
+
+ggplot(data=logVars, aes(x=childmort, y=lifeexp, col=continent)) + geom_point(alpha=0.2) + geom_parallel_slopes(se = FALSE)
+
+ggplot(data=logVars, aes(x=gdpcapita, y=lifeexp, col=continent)) + geom_point(alpha=0.2) + geom_parallel_slopes(se = FALSE)
+
+
+
+#-------Interaction Models with baby2----------
+
+ggplot(data=logVars, aes(x=income, y=lifeexp, col=baby2)) + geom_point()
+
+ggplot(data=logVars, aes(x=chdperwoman, y=lifeexp, col=baby2)) + geom_point()
+
+ggplot(data=logVars, aes(x=healthspend, y=lifeexp, col=baby2)) + geom_point()
+
+ggplot(data=logVars, aes(x=childmort, y=lifeexp, col=baby2)) + geom_point()
+
+ggplot(data=logVars, aes(x=gdpcapita, y=lifeexp, col=baby2)) + geom_point()
+```
