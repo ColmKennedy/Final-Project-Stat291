@@ -3,8 +3,8 @@ title: "Final Project - EDA"
 author: "Colm Kennedy, Shril Patel, Michael Jucan, Ethan Matta"
 date: "2022-11-03"
 output:
-  pdf_document: default
   html_document: default
+  pdf_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -17,6 +17,7 @@ knitr::opts_chunk$set(echo = TRUE)
 library(ggplot2)
 library(moderndive)
 library(dplyr)
+library(skimr)
 all <- read.csv('data/all.csv')
 head(all)
 ```
