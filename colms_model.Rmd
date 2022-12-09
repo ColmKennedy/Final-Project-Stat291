@@ -1,0 +1,91 @@
+---
+title: "colms_model"
+author: "Colm Kennedy"
+date: "2022-12-09"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Import data
+```{r}
+library(ggplot2)
+library(moderndive)
+library(dplyr)
+library(skimr)
+all <- read.csv('data/all.csv')
+head(all)
+```
+
+
+# Transformations
+
+```{r}
+allT <- all %>%
+  mutate('income'= log(income),
+         'gdpcapita'= log(gdpcapita),
+         'healthspend'=log(healthspend),
+         'co2'=log(co2))
+# Merge oceania with Asia
+allT <- allT %>%
+  mutate('continent' = ifelse(continent == 'Oceania','Asia',continent))
+```
+
+# Parallel Model
+
+Dropping: F = 77.3 adj R^2 =0.8804
+*healthspend t = -0.034 p = 0.972850 F = 85.85 adj R^2 = 0.8816
+*gdpcapita t =0.097 p = 0.923148 F = 96.3 adj R^2 = 0.8827
+*water t=-0.919 p=0.360008  F = 108.4 adj R^2 = 0.8829
+*continent
+*baby2
+```{r}
+#colms_model <- lm(data = allT, lifeexp ~ childmort + income + gdpcapita + chdperwoman + healthspend + co2 + water + continent + baby2)
+colms_modelP <- lm(data = allT, lifeexp ~ childmort + income + co2)
+summary(colms_modelP)
+
+```
+
+# Interaction: Childmort by Continent
+```{r}
+child_model <- lm(data = allT, lifeexp ~ childmort * continent)
+summary(child_model)
+```
+
+# Interaction: Water by continent
+*Europe not significant, combine it with Africa, or drop water from model
+```{r}
+water_model <- lm(data = allT, lifeexp ~ water * continent)
+summary(water_model)
+```
+
+# Interaction: income by continent
+*Not significant, keep as parallel model
+```{r}
+income_model <- lm(data = allT, lifeexp ~ income * continent)
+summary(income_model)
+```
+
+# Interaction: healthspend by continent
+*Only America significant, drop var or combine levels
+```{r}
+health_model <- lm(data = allT, lifeexp ~ healthspend * continent)
+summary(health_model)
+```
+
+# Interaction: gdpcapita by continent
+*Only America significant, drop var or combine levels
+```{r}
+gdp_model <- lm(data = allT, lifeexp ~ gdpcapita * continent)
+summary(gdp_model)
+```
+
+# My Model suggestion
+
+```{r}
+colms_model <- lm(data = allT, lifeexp ~ income + co2 + childmort * continent)
+summary(colms_model)
+
+```
