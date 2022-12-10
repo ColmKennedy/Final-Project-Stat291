@@ -1,0 +1,126 @@
+---
+title: "Ethan_model"
+author: "Ethan Matta"
+date: "2022-12-10"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+# Set up
+```{r}
+library(ggplot2)
+library(moderndive)
+library(dplyr)
+library(skimr)
+all <- read.csv('data/all.csv')
+head(all)
+
+allT <- all %>%
+  mutate('income'= log(income),
+         'gdpcapita'= log(gdpcapita),
+         'healthspend'=log(healthspend),
+         'co2'=log(co2))
+# Merge oceania with Asia
+allT <- allT %>%
+  mutate('continent' = ifelse(continent == 'Oceania','Asia',continent))
+```
+
+# what will I be analyzing: income, gdpcapita, healthspend, co2, water, child mort, chd per woman, continent, pop, murder
+# what will be in the model: income, water, childmort, maybe:  healthspend, gdpcapita, drop: co2, chdperwoman, pop, murder,
+# what i decided to keep in analysis: income can be kept but should not have an interaction model with most things
+# 
+
+```{r}
+cor(allT$income, allT$healthspend, allT$gdpcapita, allT$co2, allT$water, allT$childmort,allT$chdperwoman,  allT$population, allT$murder)
+
+cor(allT$income, allT$healthspend, allT$gdpcapita)
+cor(allT[,c("income","gdpcapita", "healthspend", "co2", "water", "childmort", "chdperwoman", "population", "murder")])
+```
+# testing various models based on correlation values
+```{r}
+tempmodel <- lm(data = allT, lifeexp ~ income * continent)
+get_regression_table(tempmodel)
+points<-get_regression_points(tempmodel)
+ggplot(data=points, aes(x=income, y=residual)) + geom_point() + geom_hline(yintercept=0)
+get_regression_summaries(tempmodel)
+
+
+tempmodel2 <- lm(data = allT, lifeexp ~ income)
+get_regression_table(tempmodel2)
+points<-get_regression_points(tempmodel2)
+ggplot(data=points, aes(x=income, y=residual)) + geom_point() + geom_hline(yintercept=0)
+get_regression_summaries(tempmodel2)
+
+tempmodel3 <- lm(data = allT, lifeexp ~ income*gdpcapita)
+get_regression_table(tempmodel3)
+points<-get_regression_points(tempmodel3)
+ggplot(data=points, aes(x=income, y=residual)) + geom_point() + geom_hline(yintercept=0)
+get_regression_summaries(tempmodel3)
+
+tempmodel4 <- lm(data = allT, lifeexp ~ income*murder)
+get_regression_table(tempmodel4)
+points<-get_regression_points(tempmodel4)
+ggplot(data=points, aes(x=income, y=residual)) + geom_point() + geom_hline(yintercept=0)
+get_regression_summaries(tempmodel4)
+
+tempmodel4 <- lm(data = allT, lifeexp ~ income*water)
+get_regression_table(tempmodel4)
+points<-get_regression_points(tempmodel4)
+ggplot(data=points, aes(x=income, y=residual)) + geom_point() + geom_hline(yintercept=0)
+get_regression_summaries(tempmodel4)
+
+tempmodel4 <- lm(data = allT, lifeexp ~ income*childmort)
+get_regression_table(tempmodel4)
+points<-get_regression_points(tempmodel4)
+ggplot(data=points, aes(x=income, y=residual)) + geom_point() + geom_hline(yintercept=0)
+get_regression_summaries(tempmodel4)
+
+tempmodel4 <- lm(data = allT, lifeexp ~ income+water*childmort) # potential model 1
+get_regression_table(tempmodel4)
+get_regression_summaries(tempmodel4)
+
+```
+# testing various models to find significant matches
+```{r}
+tempmodel4 <- lm(data = allT, lifeexp ~ co2*childmort) # potential model 2
+get_regression_table(tempmodel4)
+get_regression_summaries(tempmodel4)
+
+
+tempmodel4 <- lm(data = allT, lifeexp ~ water*childmort*gdpcapita*healthspend*co2) # potential model 3
+get_regression_table(tempmodel4)
+get_regression_summaries(tempmodel4)
+
+tempmodel4 <- lm(data = allT, lifeexp ~ water*childmort*gdpcapita*co2) # potential model 3
+get_regression_table(tempmodel4)
+get_regression_summaries(tempmodel4)
+
+tempmodel4 <- lm(data = allT, lifeexp ~ water+co2*gdpcapita) # potential model 3
+get_regression_table(tempmodel4)
+get_regression_summaries(tempmodel4)
+
+
+tempmodel4 <- lm(data = allT, lifeexp ~ popdensity*healthspend) # potential model 3
+get_regression_table(tempmodel4)
+get_regression_summaries(tempmodel4)
+```
+
+```{r}
+colms_model <- lm(data = allT, lifeexp ~ income + co2 + childmort * continent)
+get_regression_table(colms_model)
+get_regression_summaries(colms_model)
+```
+# my final model
+# I decided on this model as it is the model with consistently low p-values and a high R_squared
+```{r}
+Ethans_model <- lm(data=allT, lifeexp~income+co2+water*childmort)
+get_regression_table(Ethans_model)
+get_regression_summaries(Ethans_model)
+
+
+```
+
